@@ -173,9 +173,26 @@
           </div>
 
           <!-- Submit -->
-          <button onclick="submitListingToMVP()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold">Generate Listing</button>
-        </div>
-      </section>
-    </main>
-  </body>
+           <!-- … your HTML above … -->
+  <button
+    id="generate-btn"
+    class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold"
+  >
+    Generate Listing
+  </button>
+
+  <!-- just before </body> -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('generate-btn');
+      btn.addEventListener('click', submitListingToMVP);
+    });
+
+    async function submitListingToMVP() {
+      console.log('🔥 Generate clicked'); // ← sanity check
+      const tokenDisplay = document.getElementById('token-display-dashboard');
+      // … rest of your logic …
+    }
+  </script>
+</body>
 </html>
