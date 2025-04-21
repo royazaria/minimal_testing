@@ -167,26 +167,29 @@
           r.onload = () => res(r.result);
           r.readAsDataURL(file);
         });
-        function getVal(id) {
+        // helper to safely read any input by id
+function getVal(id) {
   const el = document.getElementById(id);
   return el ? el.value.trim() : "";
 }
-        // gather fields
-        const payload = {
-          email:   "royaza1122@gmail.com",
-          name:    "Roy",
-          description: document.getElementById("productName").value.trim(),
-          material:    document.getElementById("productMaterial").value.trim(),
-          size:        document.getElementById("productSize").value.trim(),
-          category:    document.getElementById("categorySearch").value.trim(),
-          shopName:    document.getElementById("shopName").value.trim(),
-          imagePrompt: document.getElementById("imagePrompt").value.trim(),
-          variations: Array.from(
-            document.querySelectorAll(".variation-input")
-          ).map(i => i.value.trim()).filter(v => v),
-          image: base64
-        };
 
+// gather fields
+const payload = {
+  email:       "royaza1122@gmail.com",
+  name:        "Roy",
+  description: getVal("productName"),
+  material:    getVal("productMaterial"),
+  size:        getVal("productSize"),
+  category:    getVal("categorySearch"),
+  shopName:    getVal("shopName"),
+  imagePrompt: getVal("imagePrompt"),
+  variations:  Array.from(
+                  document.querySelectorAll(".variation-input")
+                )
+                .map(i => i.value.trim())
+                .filter(v => v),
+  image:       base64
+};
         const res = await fetch(
           "https://script.google.com/macros/s/AKfycbyH0dW5UH6mFPZPD_Y7CvIqYP9YC9y4Qjq2WHbefOlDQsPnGI5sUVfjsO6kaIdeqVFg/exec",
           {
