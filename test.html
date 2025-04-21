@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Minimal MVP Test</h2>
+    <form id="mvpForm">
+      <input type="text" id="email" placeholder="Email" required><br>
+      <input type="text" id="name" placeholder="Name" required><br>
+      <input type="text" id="description" placeholder="Product Description" required><br>
+      <button type="submit">Send</button>
+    </form>
+
+    <pre id="result"></pre>
+
+    <script>
+      document.getElementById("mvpForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        fetch("https://script.google.com/macros/s/AKfycbziYi6iqHdMFVzxu61vyiWF3UlZQDIbHBGKQawnkl1gKkozj9eYVD3FB1D5cwitDdhL/exec", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: document.getElementById("email").value,
+            name: document.getElementById("name").value,
+            description: document.getElementById("description").value,
+          }),
+        })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+          document.getElementById("result").textContent = "Error: " + err;
+        });
+      });
+    </script>
+  </body>
+</html>
