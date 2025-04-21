@@ -2,101 +2,142 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>ePro AI Dashboard</title>
-    <link rel="stylesheet" href="your-tailwind-output.css" />
-    <!-- Add favicon, SEO tags, etc. here -->
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50">
+
+    <!-- Welcome Banner -->
+    <div id="welcome-banner" class="animated-gradient py-6 px-6 text-white">
+      <div class="container mx-auto flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold">
+            Welcome, <span id="dashboard-user-name">Roy</span>!
+          </h1>
+          <p>You have 
+            <span id="token-display-dashboard" class="font-bold">833</span>E to spend.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Listing Form -->
+    <main class="py-12 px-6">
+      <section id="create-listing" class="container mx-auto max-w-3xl bg-white p-8 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-6">Create New Listing</h2>
+
+        <!-- Image Upload -->
+        <div class="mb-6">
+          <label class="block mb-2 font-medium">Product Image</label>
+          <div id="imageDropArea" class="upload-area border-2 border-dashed rounded-lg p-8 text-center cursor-pointer">
+            <p class="mb-2">Drag &amp; drop or click to upload</p>
+            <button class="bg-gray-100 px-4 py-2 rounded">Browse Files</button>
+            <input id="imageUpload" type="file" accept="image/*" class="hidden" />
+          </div>
+          <div id="imagePreviewContainer" class="mt-4 hidden">
+            <img id="imagePreview" class="w-full h-48 object-contain rounded border" />
+          </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label class="block mb-2">Product Name</label>
+            <input id="productName" type="text"
+              class="w-full border rounded px-3 py-2"
+              placeholder="e.g. Ceramic Mug" />
+          </div>
+          <div>
+            <label class="block mb-2">Materials</label>
+            <input id="productMaterial" type="text"
+              class="w-full border rounded px-3 py-2"
+              placeholder="e.g. Ceramic, Glazed" />
+          </div>
+          <div>
+            <label class="block mb-2">Size/Dimensions</label>
+            <input id="productSize" type="text"
+              class="w-full border rounded px-3 py-2"
+              placeholder="e.g. 12 oz, 4 in tall" />
+          </div>
+          <div>
+            <label class="block mb-2">Category</label>
+            <input id="categorySearch" type="text"
+              class="w-full border rounded px-3 py-2"
+              placeholder="e.g. Kitchenware" />
+          </div>
+        </div>
+
+        <!-- Variations -->
+        <div class="mb-6">
+          <label class="block mb-2">Variations (optional)</label>
+          <div id="variations-container" class="space-y-2">
+            <input type="text" class="variation-input w-full border rounded px-3 py-2"
+              placeholder="e.g. Color: Red" />
+          </div>
+          <button onclick="addVariation()" class="mt-2 text-blue-600">
+            + Add Variation
+          </button>
+        </div>
+
+        <!-- Shop Name -->
+        <div class="mb-6">
+          <label class="block mb-2">Shop Name (optional)</label>
+          <input id="shopName" type="text"
+            class="w-full border rounded px-3 py-2"
+            placeholder="e.g. YourEtsyShop" />
+        </div>
+
+        <!-- Image Prompt -->
+        <div class="mb-6">
+          <label class="block mb-2">Image Prompt (optional)</label>
+          <textarea id="imagePrompt"
+            class="w-full border rounded px-3 py-2"
+            rows="3"
+            placeholder="e.g. On wooden table with morning light"></textarea>
+        </div>
+
+        <!-- Generate Listing -->
+        <button id="generate-btn"
+          class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold">
+          Generate Listing
+        </button>
+
+        <!-- Result Box -->
+        <div id="listing-output"
+          class="mt-6 p-4 bg-gray-50 rounded-lg hidden">
+        </div>
+      </section>
+    </main>
+
+    <!-- All JS at bottom -->
     <script>
-      async function submitListingToMVP() {
-        const tokenDisplay = document.getElementById('token-display-dashboard');
-        const tokenCount = parseInt(tokenDisplay.innerText);
+      // handle drag‑n‑drop + preview
+      document.addEventListener("DOMContentLoaded", () => {
+        const fileInput = document.getElementById("imageUpload");
+        const dropArea = document.getElementById("imageDropArea");
+        const previewContainer = document.getElementById("imagePreviewContainer");
+        const previewImg = document.getElementById("imagePreview");
 
-        if (tokenCount <= 0) {
-          alert("❌ You’re out of tokens! Please recharge to continue.");
-          return;
-        }
+        dropArea.addEventListener("click", () => fileInput.click());
+        fileInput.addEventListener("change", handleFiles);
 
-        const fileInput = document.getElementById('imageUpload');
-        const imageFile = fileInput.files[0];
-        if (!imageFile) {
-          alert("❌ Please upload an image.");
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const base64Image = reader.result;
-
-          const description = document.getElementById("productName").value || "Handmade item";
-          const material = document.getElementById("productMaterial").value || "Unknown";
-          const size = document.getElementById("productSize").value || "Not specified";
-          const category = document.getElementById("categorySearch").value || "Uncategorized";
-          const shopName = document.getElementById("shopName").value || "";
-          const imagePrompt = document.getElementById("imagePrompt").value || "";
-          const userEmail = "royaza1122@gmail.com"; // replace dynamically
-          const userName = "Roy"; // replace dynamically
-
-          const variations = Array.from(document.querySelectorAll('.variation-input'))
-            .map(i => i.value)
-            .filter(v => v);
-
-          const payload = {
-            email: userEmail,
-            name: userName,
-            description,
-            material,
-            size,
-            category,
-            shopName,
-            imagePrompt,
-            variations,
-            image: base64Image
-          };
-
-          try {
-            const res = await fetch(
-              "https://script.google.com/macros/s/AKfycbyH0dW5UH6mFPZPD_Y7CvIqYP9YC9y4Qjq2WHbefOlDQsPnGI5sUVfjsO6kaIdeqVFg/exec",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-              }
-            );
-            const result = await res.json();
-
-            if (result.status === "used_token") {
-              tokenDisplay.innerText = tokenCount - 1;
-              alert("✅ Token used! Now generating your output...");
-            } else if (result.status === "new_user") {
-              alert("🎉 New user created! You now have 5 free tokens.");
-              tokenDisplay.innerText = 5;
-            } else {
-              alert("⚠️ Something went wrong.");
-            }
-          } catch (err) {
-            alert("❌ Failed to connect. Please try again later.");
-            console.error(err);
-          }
-        };
-        reader.readAsDataURL(imageFile);
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const fileInput = document.getElementById('imageUpload');
-        const dropArea = document.getElementById('imageDropArea');
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        const previewImg = document.getElementById('imagePreview');
-
-        fileInput.addEventListener('change', handleFiles);
-        ['dragenter','dragover'].forEach(e =>
-          dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.add('bg-gray-100'); })
+        ["dragenter","dragover"].forEach(evt =>
+          dropArea.addEventListener(evt, e => {
+            e.preventDefault();
+            dropArea.classList.add("bg-gray-100");
+          })
         );
-        ['dragleave','drop'].forEach(e =>
-          dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.remove('bg-gray-100'); })
+        ["dragleave","drop"].forEach(evt =>
+          dropArea.addEventListener(evt, e => {
+            e.preventDefault();
+            dropArea.classList.remove("bg-gray-100");
+          })
         );
-        dropArea.addEventListener('drop', ev => {
-          ev.preventDefault();
-          fileInput.files = ev.dataTransfer.files;
+        dropArea.addEventListener("drop", e => {
+          e.preventDefault();
+          fileInput.files = e.dataTransfer.files;
           handleFiles();
         });
 
@@ -106,168 +147,99 @@
           const reader = new FileReader();
           reader.onload = e => {
             previewImg.src = e.target.result;
-            previewContainer.classList.remove('hidden');
+            previewContainer.classList.remove("hidden");
           };
           reader.readAsDataURL(file);
         }
       });
+
+      // collects inputs, POSTs to your back‑end, returns JSON.data
+      async function submitListingToMVP() {
+        const tokenDisplay = document.getElementById("token-display-dashboard");
+        let tokens = parseInt(tokenDisplay.innerText, 10);
+        if (tokens <= 0) throw new Error("Out of tokens");
+
+        // read image, convert to base64
+        const file = document.getElementById("imageUpload").files[0];
+        if (!file) throw new Error("Please upload an image");
+        const base64 = await new Promise(res => {
+          const r = new FileReader();
+          r.onload = () => res(r.result);
+          r.readAsDataURL(file);
+        });
+
+        // gather fields
+        const payload = {
+          email:   "royaza1122@gmail.com",
+          name:    "Roy",
+          description: document.getElementById("productName").value.trim(),
+          material:    document.getElementById("productMaterial").value.trim(),
+          size:        document.getElementById("productSize").value.trim(),
+          category:    document.getElementById("categorySearch").value.trim(),
+          shopName:    document.getElementById("shopName").value.trim(),
+          imagePrompt: document.getElementById("imagePrompt").value.trim(),
+          variations: Array.from(
+            document.querySelectorAll(".variation-input")
+          ).map(i => i.value.trim()).filter(v => v),
+          image: base64
+        };
+
+        const res = await fetch(
+          "https://script.google.com/macros/s/AKfycbyH0dW5UH6mFPZPD_Y7CvIqYP9YC9y4Qjq2WHbefOlDQsPnGI5sUVfjsO6kaIdeqVFg/exec",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          }
+        );
+        const json = await res.json();
+        if (json.status !== "used_token" && json.status !== "new_user") {
+          throw new Error("Unexpected status: " + json.status);
+        }
+        // update token count
+        if (json.status === "used_token") {
+          tokenDisplay.innerText = --tokens;
+        } else {
+          tokenDisplay.innerText = 5;
+        }
+        return json.data; 
+      }
+
+      // wire up the Generate button & render
+      document.addEventListener("DOMContentLoaded", () => {
+        const btn    = document.getElementById("generate-btn");
+        const output = document.getElementById("listing-output");
+
+        btn.addEventListener("click", async () => {
+          output.textContent = "Generating…";
+          output.classList.remove("hidden");
+
+          try {
+            const result = await submitListingToMVP();
+            output.innerHTML = `
+              <h3 class="text-xl font-bold mb-2">${result.title}</h3>
+              <p class="mb-4">${result.description}</p>
+              <div class="flex flex-wrap gap-2">
+                ${result.tags
+                  .map(t => `<span class="bg-gray-200 px-2 py-1 rounded">${t}</span>`)
+                  .join("")}
+              </div>
+            `;
+          } catch (err) {
+            output.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
+          }
+        });
+      });
+
+      // helper to add new variation inputs
+      function addVariation() {
+        const container = document.getElementById("variations-container");
+        const input     = document.createElement("input");
+        input.type      = "text";
+        input.placeholder = "e.g. Color: Blue";
+        input.className   = "variation-input w-full border rounded px-3 py-2";
+        container.append(input);
+      }
     </script>
-  </head>
-  <body class="bg-gray-50">
-    <main class="pb-20">
-      <!-- Welcome Banner -->
-      <div id="welcome-banner" class="animated-gradient py-6 px-6 text-white">
-        <div class="container mx-auto flex justify-between items-center">
-          <div>
-            <h1 class="text-2xl font-bold">Welcome, <span id="dashboard-user-name">Roy</span>!</h1>
-            <p>You have <span id="token-display-dashboard" class="font-bold">833</span>E to spend.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Single-Upload Listing Form -->
-      <section id="create-listing" class="py-12 px-6">
-        <div class="container mx-auto max-w-3xl bg-white p-8 rounded-lg shadow-lg">
-          <h2 class="text-2xl font-bold mb-6">Create New Listing</h2>
-
-          <!-- Image Upload -->
-          <div class="mb-6">
-            <label class="block mb-2 font-medium">Product Image</label>
-            <div id="imageDropArea" class="upload-area border-2 border-dashed rounded-lg p-8 text-center cursor-pointer">
-              <p class="mb-2">Drag & drop or click to upload</p>
-              <button class="bg-gray-100 px-4 py-2 rounded">Browse Files</button>
-              <input id="imageUpload" type="file" accept="image/*" class="hidden" />
-            </div>
-            <div id="imagePreviewContainer" class="mt-4 hidden">
-              <img id="imagePreview" class="w-full h-48 object-contain rounded border" />
-            </div>
-          </div>
-
-          <!-- Details -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label class="block mb-2">Product Name</label>
-              <input id="productName" type="text" class="w-full border rounded px-3 py-2" placeholder="e.g. Ceramic Mug" />
-            </div>
-            <div>
-              <label class="block mb-2">Materials</label>
-              <input id="productMaterial" type="text" class="w-full border rounded px-3 py-2" placeholder="e.g. Ceramic, Glazed" />
-            </div>
-            <div>
-              <label class="block mb-2">Size/Dimensions</label>
-              <input id="productSize" type="text" class="w-full border rounded px-3 py-2" placeholder="e.g. 12oz, 4in tall" />
-            </div>
-            <div>
-              <label class="block mb-2">Category</label>
-              <input id="categorySearch" type="text" class="w-full border rounded px-3 py-2" placeholder="e.g. Kitchenware" />
-            </div>
-          </div>
-
-          <!-- Variations -->
-          <div class="mb-6">
-            <label class="block mb-2">Variations (optional)</label>
-            <div id="variations-container" class="space-y-2">
-              <input type="text" class="variation-input w-full border rounded px-3 py-2" placeholder="e.g. Color: Red" />
-            </div>
-            <button onclick="addVariation()" class="mt-2 text-blue-600">+ Add Variation</button>
-          </div>
-  <!-- Generate Listing button -->
-  <button
-    id="generate-btn"
-    class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold"
-  >
-    Generate Listing
-  </button>
-
-  <!-- This empty box will hold your result -->
-  <div
-    id="listing-output"
-    class="mt-6 p-4 bg-gray-50 rounded-lg hidden"
-  ></div>
-  <!-- Place this just before </body> -->
- <script>
-  // ① submitListingToMVP gathers your inputs, posts to backend, and returns the listing data
-  async function submitListingToMVP() {
-    const tokenDisplay = document.getElementById("token-display-dashboard");
-    const tokenCount = parseInt(tokenDisplay.innerText, 10);
-    if (tokenCount <= 0) throw new Error("Out of tokens");
-
-    // Gather inputs
-    const description = document.getElementById("productName").value || "";
-    const material    = document.getElementById("productMaterial").value || "";
-    const size        = document.getElementById("productSize").value || "";
-    const category    = document.getElementById("categorySearch").value || "";
-    const shopName    = document.getElementById("shopName").value || "";
-    const imagePrompt = document.getElementById("imagePrompt").value || "";
-    const variations  = Array.from(
-      document.querySelectorAll(".variation-input")
-    )
-      .map(i => i.value.trim())
-      .filter(v => v);
-
-    // Build payload
-    const payload = {
-      description,
-      material,
-      size,
-      category,
-      shopName,
-      imagePrompt,
-      variations
-    };
-
-    // Send to your Google script
-    const res = await fetch(
-      "https://script.google.com/macros/s/AKfycbyH0dW5UH6mFPZPD_Y7CvIqYP9YC9y4Qjq2WHbefOlDQsPnGI5sUVfjsO6kaIdeqVFg/exec",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }
-    );
-    const json = await res.json();
-    if (json.status !== "used_token" && json.status !== "new_user") {
-      throw new Error("Unexpected status: " + json.status);
-    }
-
-    // Optionally decrement token count on UI:
-    if (json.status === "used_token") {
-      tokenDisplay.innerText = tokenCount - 1;
-    } else if (json.status === "new_user") {
-      tokenDisplay.innerText = 5;
-    }
-
-    // Return the actual listing data (expects { title, description, tags: [] })
-    return json.data;
-  }
-</script>
-
-<script>
-  // ② On page load, wire up the Generate button and render results
-  document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("generate-btn");
-    const output = document.getElementById("listing-output");
-
-    btn.addEventListener("click", async () => {
-      output.textContent = "Generating…";
-      output.classList.remove("hidden");
-
-      try {
-        const result = await submitListingToMVP();
-        output.innerHTML = `
-          <h3 class="text-xl font-bold mb-2">${result.title}</h3>
-          <p class="mb-4">${result.description}</p>
-          <div class="flex flex-wrap gap-2">
-            ${result.tags
-              .map(t => `<span class="bg-gray-200 px-2 py-1 rounded">${t}</span>`)
-              .join("")}
-          </div>
-        `;
-      } catch (err) {
-        output.innerHTML = `<p class="text-red-500">Error: ${err.message}</p>`;
-      }
-    });
-  });
-</script>
-</body>
+  </body>
 </html>
