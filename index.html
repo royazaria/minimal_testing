@@ -167,7 +167,10 @@
           r.onload = () => res(r.result);
           r.readAsDataURL(file);
         });
-
+        function getVal(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
         // gather fields
         const payload = {
           email:   "royaza1122@gmail.com",
