@@ -4,82 +4,63 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ePro AI Dashboard</title>
-   <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="your-tailwind-output.css" />
     <!-- Add favicon, SEO tags, etc. here -->
-    async function submitListingToMVP() {
-  const tokenDisplay = document.getElementById('token-display-dashboard');
-  const tokenCount = parseInt(tokenDisplay.innerText);
+    <script>
+      async function submitListingToMVP() {
+        const tokenDisplay = document.getElementById('token-display-dashboard');
+        const tokenCount = parseInt(tokenDisplay.innerText);
 
-  if (tokenCount <= 0) {
-    alert("❌ You’re out of tokens! Please recharge to continue.");
-    return;
-  }
+        if (tokenCount <= 0) {
+          alert("❌ You’re out of tokens! Please recharge to continue.");
+          return;
+        }
 
-  const imageFile = document.getElementById('imageUpload').files[0];
-  if (!imageFile) {
-    alert("❌ Please upload an image.");
-    return;
-  }
+        const description = document.getElementById("productName").value || "Handmade item";
+        const material = document.getElementById("productMaterial").value || "Unknown";
+        const size = document.getElementById("productSize").value || "Not specified";
+        const userEmail = "royaza1122@gmail.com"; // ✅ use dynamic email once login is ready
+        const userName = "Roy"; // ✅ replace with actual user name from login system
 
-  const reader = new FileReader();
-  reader.onload = async function () {
-    const base64Image = reader.result;
+        const payload = {
+          email: userEmail,
+          name: userName,
+          description,
+          material,
+          size
+        };
 
-    const description = document.getElementById("productName").value || "Handmade item";
-    const material = document.getElementById("productMaterial").value || "Unknown";
-    const size = document.getElementById("productSize").value || "Not specified";
-    const category = document.getElementById("categorySearch").value || "Uncategorized";
-    const shopName = document.getElementById("shopName").value || "";
-    const imagePrompt = document.getElementById("imagePrompt").value || "";
-    const email = "royaza1122@gmail.com"; // Replace with dynamic in real system
-    const name = "Roy"; // Replace with dynamic in real system
+        try {
+          const response = await fetch("https://script.google.com/macros/s/AKfycbyH0dW5UH6mFPZPD_Y7CvIqYP9YC9y4Qjq2WHbefOlDQsPnGI5sUVfjsO6kaIdeqVFg/exec", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
 
-    // Get all variations
-    const variationInputs = document.querySelectorAll('.variation-input');
-    const variations = Array.from(variationInputs).map(input => input.value).filter(v => v);
+          const result = await response.json();
 
-    const payload = {
-      email,
-      name,
-      description,
-      material,
-      size,
-      category,
-      shopName,
-      imagePrompt,
-      variations,
-      image: base64Image
-    };
-
-    try {
-      const response = await fetch("https://script.google.com/macros/s/AKfycbyH0dW5UH6mFPZPD_Y7CvIqYP9YC9y4Qjq2WHbefOlDQsPnGI5sUVfjsO6kaIdeqVFg/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await response.json();
-
-      if (result.status === "used_token") {
-        tokenDisplay.innerText = tokenCount - 1;
-        alert("✅ Token used! Output is generating.");
-      } else if (result.status === "new_user") {
-        alert("🎉 New user created! You now have 5 free tokens.");
-        tokenDisplay.innerText = 5;
-      } else {
-        alert("⚠️ Something went wrong.");
+          if (result.status === "used_token") {
+            tokenDisplay.innerText = tokenCount - 1;
+            alert("✅ Token used! Now generating your output...");
+            // You can plug in OpenAI/Cling trigger here
+          } else if (result.status === "new_user") {
+            alert("🎉 New user created! You now have 5 free tokens.");
+            tokenDisplay.innerText = 5;
+          } else {
+            alert("⚠️ Something went wrong.");
+          }
+        } catch (error) {
+          alert("❌ Failed to connect. Please check your internet or backend.");
+          console.error(error);
+        }
       }
-    } catch (error) {
-      alert("❌ Connection error. Try again later.");
-      console.error(error);
-    }
-  };
-
-  reader.readAsDataURL(imageFile);
-}
     </script>
   </head>
   <body>
+    <!-- FULL CONTENT GOES HERE (UNCHANGED) -->
+    <!-- PASTE ALL YOUR HTML CONTENT FROM THE EXISTING FILE AFTER THIS BODY TAG -->
+  </body>
+</html>
     <!-- Dashboard Content -->
   <main class="pb-20">
     <!-- Welcome Banner for logged in users -->
